@@ -19,23 +19,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import './StarTokenInterface.sol';
 
 
-contract AceToken is StarTokenInterface {
+contract TeamToken is StarTokenInterface {
     using SafeMath for uint256;
     
     // ERC20 constants
-    string public constant name = "ACE Token";
-    string public constant symbol = "ACE";
-    uint public constant decimals = 0;
+    string public constant name = "TEAM";
+    string public constant symbol = "TEAM";
+    uint public constant decimals = 4;
 
     // Minting constants
-    uint256 public constant MAXSOLD_SUPPLY = 99000000;
-    uint256 public constant HARDCAPPED_SUPPLY = 165000000;
+    uint256 public constant MAXSOLD_SUPPLY = 450000000000;
+    uint256 public constant HARDCAPPED_SUPPLY = 750000000000;
 
     uint256 public investorSupply = 0;
     uint256 public extraSupply = 0;
@@ -68,7 +68,7 @@ contract AceToken is StarTokenInterface {
         _;
     }
 
-    function AceToken() public {
+    function TeamToken() public {
       teamTokensHolder = msg.sender;
       communityTokensHolder = msg.sender;
 
@@ -155,13 +155,13 @@ contract AceToken is StarTokenInterface {
     */
     function mint(address _to, uint256 _amount) onlyOwner canMint public returns (bool) {
         require(_amount > 0);
-        totalSupply = totalSupply.add(_amount);
+        totalSupply_ = totalSupply_.add(_amount);
         investorSupply = investorSupply.add(_amount);
         freeToExtraMinting = freeToExtraMinting.add(_amount);
 
         // Prevent to emit more than sale hardcap!
         assert(investorSupply <= MAXSOLD_SUPPLY);
-        assert(totalSupply <= HARDCAPPED_SUPPLY);
+        assert(totalSupply_ <= HARDCAPPED_SUPPLY);
 
         balances[_to] = balances[_to].add(_amount);
         Mint(_to, _amount);
@@ -181,13 +181,13 @@ contract AceToken is StarTokenInterface {
       uint256 communityPart = onePercent * DISTRIBUTION_COMMUNITY;
       uint256 extraTokens = teamPart.add(communityPart);
 
-      totalSupply = totalSupply.add(extraTokens);
+      totalSupply_ = totalSupply_.add(extraTokens);
       extraSupply = extraSupply.add(extraTokens);
 
       uint256 leftToNextMinting = freeToExtraMinting % DISTRIBUTION_INVESTORS;
       freeToExtraMinting = leftToNextMinting;
 
-      assert(totalSupply <= HARDCAPPED_SUPPLY);
+      assert(totalSupply_ <= HARDCAPPED_SUPPLY);
       assert(extraSupply <= HARDCAPPED_SUPPLY.sub(MAXSOLD_SUPPLY));
 
       balances[teamTokensHolder] = balances[teamTokensHolder].add(teamPart);

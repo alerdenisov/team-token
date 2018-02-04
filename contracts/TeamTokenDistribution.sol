@@ -25,14 +25,14 @@ import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import './StarTokenInterface.sol';
 
-contract AceTokenDistribution is Ownable {
+contract TeamTokenDistribution is Ownable {
   using SafeMath for uint256;
   StarTokenInterface public token;
 
   event DistributionMint(address indexed to, uint256 amount);
   event ExtraMint();
 
-  function AceTokenDistribution (address _tokenAddress) {
+  function TeamTokenDistribution (address _tokenAddress) public {
     require(_tokenAddress != 0);
     token = StarTokenInterface(_tokenAddress);
   }
