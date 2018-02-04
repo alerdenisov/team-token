@@ -1,18 +1,18 @@
 const expectThrow = require('./utils').expectThrow
 const promisify = require('./utils').promisify
-const AceToken = artifacts.require("./AceToken.sol");
-const AceTokenDistribution = artifacts.require("./AceTokenDistribution.sol");
+const TeamToken = artifacts.require("./TeamToken.sol");
+const TeamTokenDistribution = artifacts.require("./TeamTokenDistribution.sol");
 
 
-let ACE;
+let Team;
 let DISTR;
 
-contract('AceTokenDistribution', accounts => {
+contract('TeamTokenDistribution', accounts => {
   const OWNER_SIGNATURE = { from: accounts[0] }
 
   beforeEach(async () => {
-    ACE = await AceToken.new(accounts[1], accounts[2], OWNER_SIGNATURE)
-    DISTR = await AceTokenDistribution.new(ACE.address, OWNER_SIGNATURE)
+    Team = await TeamToken.new(OWNER_SIGNATURE)
+    DISTR = await TeamTokenDistribution.new(Team.address, OWNER_SIGNATURE)
   })
 
   describe('Initialization', async() => {
@@ -21,19 +21,19 @@ contract('AceTokenDistribution', accounts => {
     })
 
     it('should haven\'t right to mint by default', async() => {
-      expectThrow(DISTR.bulkMint(accounts, accounts.map(acc => 100000), OWNER_SIGNATURE))
+      await expectThrow(DISTR.bulkMint(accounts, accounts.map(acc => 100000), OWNER_SIGNATURE))
     })
 
     it('should give right to mint', async() => {
-      await ACE.transferOwnership(DISTR.address, OWNER_SIGNATURE);
+      await Team.transferOwnership(DISTR.address, OWNER_SIGNATURE);
       await DISTR.bulkMint(accounts, accounts.map(acc => 100000), OWNER_SIGNATURE);
     })
 
     it('should return rights to mint', async() => {
-      await ACE.transferOwnership(DISTR.address, OWNER_SIGNATURE);
-      assert(await ACE.owner() == DISTR.address);
+      await Team.transferOwnership(DISTR.address, OWNER_SIGNATURE);
+      assert(await Team.owner() == DISTR.address);
       await DISTR.returnOwnership(OWNER_SIGNATURE);
-      assert(await ACE.owner() == accounts[0]);
+      assert(await Team.owner() == accounts[0]);
     })
   })
 
@@ -44,11 +44,11 @@ contract('AceTokenDistribution', accounts => {
     }
 
     const assertSupply = async (expect, msg) => {
-      await assertEquals(ACE.totalSupply, expect, msg)
+      await assertEquals(Team.totalSupply, expect, msg)
     }
 
     beforeEach(async() => {
-      await ACE.transferOwnership(DISTR.address, OWNER_SIGNATURE)
+      await Team.transferOwnership(DISTR.address, OWNER_SIGNATURE)
     })
 
     it('should mint 10000 tokens', async() => {
