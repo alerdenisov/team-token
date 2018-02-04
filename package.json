@@ -5,14 +5,21 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {
-    "zeppelin-solidity": "^1.2.0"
-  },
   "devDependencies": {
-    "sol-merger": "0.0.2"
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-stage-2": "^6.18.0",
+    "babel-preset-stage-3": "^6.17.0",
+    "babel-register": "^6.23.0",
+    "sol-merger": "^0.1.2",
+    "truffle": "^4.0.6"
   },
   "scripts": {
-    "merge": "sol-merger contracts\\AceToken.sol build\\contracts\\AceToken.sol && sol-merger contracts\\AceTokenDistribution.sol build\\contracts\\AceTokenDistribution.sol "
+    "compile": "truffle compile",
+    "migrate": "truffle migrate",
+    "ganache": "ganache",
+    "test": "truffle test",
+    "merge": "sol-merger contracts\\TeamToken.sol merged && sol-merger contracts\\TeamTokenDistribution.sol merged"
   },
   "repository": {
     "type": "git",
@@ -27,5 +34,8 @@
   ],
   "author": "Aler Denisov <aler.zampillo@gmail.com>",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/alerdenisov/acetoken#readme"
+  "homepage": "https://bitbucket.org/alerdenisov/acetoken#readme",
+  "dependencies": {
+    "zeppelin-solidity": "^1.6.0"
+  }
 }

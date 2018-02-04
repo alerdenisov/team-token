@@ -1,33 +1,32 @@
-# ACE Token
+# Team Token
 
 ## Abstract
-First of one token for TokenStars platform
+TEAM by TokenStars connects rising talents and successful PROs in sports and entertainment with fans and advertisers.
 
 ### Details
-__Name:__ ACE Token
+__Name:__ TEAM
 
-__Ticker:__ ACE
+__Ticker:__ TEAM
 
-__Decimals:__ 0
+__Decimals:__ 4
 
 ### Emission
 __Type:__ Once
 
-__Amount:__ Not more than *165,000,000* tokens
+__Amount:__ Not more than *75,000,000* TEAM tokens
 
 __Distribution__ 
-__3/5__ – crowdsale investors 
-__1/5__ – team
-__1/5__ – community (rewards, bounty)
+__3/5__ or 45M – crowdsale investors 
+__1/5__ or 15M – team
+__1/5__ or 15M – community (rewards, bounty)
 
 ## Installation
 1. Install (if not yet) node and npm on your machine
-2. Execute command `npm install -g truffle`
-3. Clone repository `git clone https://github.com/alerdenisov/ace-token.git ace`
+2. Clone repository to your local machine `git clone https://github.com/alerdenisov/team-token`
+2. Execute command `npm install` inside root directory of this repository
 
-## Usage
-1. First run `truffle compile`
-2. Then run `truffle migrate` to deploy the contracts onto your network of choice (default "development").
+## Migration
+1. Run `npm run compile && npm run migrate` to deploy the contracts onto your network of choice (default "development").
 
 ## Testing
-1. Run command `truffle test`
+1. Run command `npm run test`
