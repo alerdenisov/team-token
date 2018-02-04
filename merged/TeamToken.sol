@@ -1,43 +1,4 @@
-pragma solidity ^0.4.15;
-
-/**
- * @title Ownable
- * @dev The Ownable contract has an owner address, and provides basic authorization control
- * functions, this simplifies the implementation of "user permissions".
- */
-contract Ownable {
-  address public owner;
-
-
-  /**
-   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
-   * account.
-   */
-  function Ownable() {
-    owner = msg.sender;
-  }
-
-
-  /**
-   * @dev Throws if called by any account other than the owner.
-   */
-  modifier onlyOwner() {
-    require(msg.sender == owner);
-    _;
-  }
-
-
-  /**
-   * @dev Allows the current owner to transfer control of the contract to a newOwner.
-   * @param newOwner The address to transfer ownership to.
-   */
-  function transferOwnership(address newOwner) onlyOwner {
-    if (newOwner != address(0)) {
-      owner = newOwner;
-    }
-  }
-
-}
+pragma solidity ^0.4.18;
 
 /**
  * @title SafeMath
@@ -186,6 +147,45 @@ contract StandardToken is ERC20, BasicToken {
 }
 
 /**
+ * @title Ownable
+ * @dev The Ownable contract has an owner address, and provides basic authorization control
+ * functions, this simplifies the implementation of "user permissions".
+ */
+contract Ownable {
+  address public owner;
+
+
+  /**
+   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
+   * account.
+   */
+  function Ownable() {
+    owner = msg.sender;
+  }
+
+
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
+
+
+  /**
+   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @param newOwner The address to transfer ownership to.
+   */
+  function transferOwnership(address newOwner) onlyOwner {
+    if (newOwner != address(0)) {
+      owner = newOwner;
+    }
+  }
+
+}
+
+/**
  * @title Mintable token
  * @dev Simple ERC20 Token example, with mintable token creation
  * @dev Issue: * https://github.com/OpenZeppelin/zeppelin-solidity/issues/120
@@ -307,45 +307,215 @@ contract StarTokenInterface is MintableToken {
 
 
 
-contract AceTokenDistribution is Ownable {
-  using SafeMath for uint256;
-  StarTokenInterface public token;
+contract TeamToken is StarTokenInterface {
+    using SafeMath for uint256;
+    
+    // ERC20 constants
+    string public constant name = "TEAM";
+    string public constant symbol = "TEAM";
+    uint public constant decimals = 0;
 
-  event DistributionMint(address indexed to, uint256 amount);
-  event ExtraMint();
+    // Minting constants
+    uint256 public constant MAXSOLD_SUPPLY = 45000000;
+    uint256 public constant HARDCAPPED_SUPPLY = 75000000;
 
-  function AceTokenDistribution (address _tokenAddress) {
-    require(_tokenAddress != 0);
-    token = StarTokenInterface(_tokenAddress);
-  }
+    uint256 public investorSupply = 0;
+    uint256 public extraSupply = 0;
+    uint256 public freeToExtraMinting = 0;
 
-  /**
-  * @dev Minting required amount of tokens in a loop
-  * @param _investors The array of addresses of investors
-  * @param _amounts The array of token amounts corresponding to investors
-  */
-  function bulkMint(address[] _investors, uint256[] _amounts) onlyOwner public returns (bool) {
-    // require(_investors.length < 50);
-    require(_investors.length == _amounts.length);
+    uint256 public constant DISTRIBUTION_INVESTORS = 60;
+    uint256 public constant DISTRIBUTION_TEAM      = 20;
+    uint256 public constant DISTRIBUTION_COMMUNITY = 20;
 
-    for (uint index = 0; index < _investors.length; index++) {
-      assert(token.mint(_investors[index], _amounts[index]));
-      DistributionMint(_investors[index], _amounts[index]);
+    address public teamTokensHolder;
+    address public communityTokensHolder;
+
+    // Transfer rules
+    bool public transferAllowed = false;
+    mapping (address=>bool) public specialAllowed;
+
+    // Transfer rules events
+    // event TransferAllowed();
+    // event TransferAllowanceFor(address indexed who, bool indexed state);
+
+    // Holders events
+    event ChangeCommunityHolder(address indexed from, address indexed to);
+    event ChangeTeamHolder(address indexed from, address indexed to);
+
+    /**
+    * @dev check transfer is allowed
+    */
+    modifier allowTransfer() {
+        require(transferAllowed || specialAllowed[msg.sender]);
+        _;
     }
-  }
 
-  /**
-  * @dev Minting extra (team and community) tokens
-  */
-  function extraMint() onlyOwner public returns (bool) {
-    assert(token.extraMint());
-    ExtraMint();
-  }
+    function TeamToken() public {
+      teamTokensHolder = msg.sender;
+      communityTokensHolder = msg.sender;
 
-  /**
-  * @dev Return ownership to previous owner
-  */
-  function returnOwnership() onlyOwner public returns (bool) {
-    token.transferOwnership(owner);
-  }
+      ChangeTeamHolder(0x0, teamTokensHolder);
+      ChangeCommunityHolder(0x0, communityTokensHolder);
+    }
+
+    /**
+    * @dev change team tokens holder
+    * @param _tokenHolder The address of next team tokens holder
+    */
+    function setTeamTokensHolder(address _tokenHolder) onlyOwner public returns (bool) {
+      require(_tokenHolder != 0);
+      address temporaryEventAddress = teamTokensHolder;
+      teamTokensHolder = _tokenHolder;
+      ChangeTeamHolder(temporaryEventAddress, teamTokensHolder);
+      return true;
+    }
+
+    /**
+    * @dev change community tokens holder
+    * @param _tokenHolder The address of next community tokens holder
+    */
+    function setCommunityTokensHolder(address _tokenHolder) onlyOwner public returns (bool) {
+      require(_tokenHolder != 0);
+      address temporaryEventAddress = communityTokensHolder;
+      communityTokensHolder = _tokenHolder;
+      ChangeCommunityHolder(temporaryEventAddress, communityTokensHolder);
+      return true;
+    }
+
+    /**
+    * @dev Doesn't allow to send funds on contract!
+    */
+    function () payable public {
+        require(false);
+    }
+
+    /**
+    * @dev transfer token for a specified address if transfer is open
+    * @param _to The address to transfer to.
+    * @param _value The amount to be transferred.
+    */
+    function transfer(address _to, uint256 _value) allowTransfer public returns (bool) {
+        return super.transfer(_to, _value);
+    }
+
+    
+    /**
+    * @dev Transfer tokens from one address to another if transfer is open
+    * @param _from address The address which you want to send tokens from
+    * @param _to address The address which you want to transfer to
+    * @param _value uint256 the amount of tokens to be transferred
+     */
+    function transferFrom(address _from, address _to, uint256 _value) allowTransfer public returns (bool) {
+        return super.transferFrom(_from, _to, _value);
+    }
+
+    /**
+    * @dev Open transfer for everyone or throws
+     */
+    function openTransfer() onlyOwner public returns (bool) {
+        require(!transferAllowed);
+        transferAllowed = true;
+        TransferAllowed();
+        return true;
+    }
+
+    /**
+    * @dev allow transfer for the given address against global rules
+    * @param _for addres The address of special allowed transfer (required for smart contracts)
+     */
+    function toggleTransferFor(address _for) onlyOwner public returns (bool) {
+        specialAllowed[_for] = !specialAllowed[_for];
+        TransferAllowanceFor(_for, specialAllowed[_for]);
+        return specialAllowed[_for];
+    }
+
+    /**
+    * @dev Function to mint tokens for investor
+    * @param _to The address that will receive the minted tokens.
+    * @param _amount The amount of tokens to emit.
+    * @return A boolean that indicates if the operation was successful.
+    */
+    function mint(address _to, uint256 _amount) onlyOwner canMint public returns (bool) {
+        require(_amount > 0);
+        totalSupply = totalSupply.add(_amount);
+        investorSupply = investorSupply.add(_amount);
+        freeToExtraMinting = freeToExtraMinting.add(_amount);
+
+        // Prevent to emit more than sale hardcap!
+        assert(investorSupply <= MAXSOLD_SUPPLY);
+        assert(totalSupply <= HARDCAPPED_SUPPLY);
+
+        balances[_to] = balances[_to].add(_amount);
+        Mint(_to, _amount);
+        Transfer(address(this), _to, _amount);
+        return true;
+    }
+
+
+    /**
+    * @dev Mint extra token to corresponding token and community holders
+    */
+    function extraMint() onlyOwner canMint public returns (bool) {
+      require(freeToExtraMinting > 0);
+
+      uint256 onePercent = freeToExtraMinting / DISTRIBUTION_INVESTORS;
+      uint256 teamPart = onePercent * DISTRIBUTION_TEAM;
+      uint256 communityPart = onePercent * DISTRIBUTION_COMMUNITY;
+      uint256 extraTokens = teamPart.add(communityPart);
+
+      totalSupply = totalSupply.add(extraTokens);
+      extraSupply = extraSupply.add(extraTokens);
+
+      uint256 leftToNextMinting = freeToExtraMinting % DISTRIBUTION_INVESTORS;
+      freeToExtraMinting = leftToNextMinting;
+
+      assert(totalSupply <= HARDCAPPED_SUPPLY);
+      assert(extraSupply <= HARDCAPPED_SUPPLY.sub(MAXSOLD_SUPPLY));
+
+      balances[teamTokensHolder] = balances[teamTokensHolder].add(teamPart);
+      balances[communityTokensHolder] = balances[communityTokensHolder].add(communityPart);
+
+      Mint(teamTokensHolder, teamPart);
+      Transfer(address(this), teamTokensHolder, teamPart);
+      Mint(communityTokensHolder, communityPart);
+      Transfer(address(this), communityTokensHolder, communityPart);
+
+      return true;
+    }
+
+    /**
+    * @dev Increase approved amount to spend 
+    * @param _spender The address which will spend the funds.
+    * @param _addedValue The amount of tokens to increase already approved amount. 
+     */
+    function increaseApproval (address _spender, uint _addedValue)  public returns (bool success) {
+        allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
+        Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+        return true;
+    }
+
+    /**
+    * @dev Decrease approved amount to spend 
+    * @param _spender The address which will spend the funds.
+    * @param _subtractedValue The amount of tokens to decrease already approved amount. 
+     */
+    function decreaseApproval (address _spender, uint _subtractedValue) public returns (bool success) {
+        uint oldValue = allowed[msg.sender][_spender];
+        if (_subtractedValue > oldValue) {
+            allowed[msg.sender][_spender] = 0;
+        } else {
+            allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
+        }
+        Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+        return true;
+    }
+
+
+    function finilize() onlyOwner public returns (bool) {
+        require(mintingFinished);
+        require(transferAllowed);
+
+        owner = 0x0;
+        return true;
+    }
 }
