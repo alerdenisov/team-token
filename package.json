@@ -1,5 +1,5 @@
 {
-  "name": "ace-token",
+  "name": "team-token",
   "version": "1.0.0",
   "description": "Implementation of Mintable ERC20 token based on Ethereum protocol",
   "directories": {
