@@ -36,6 +36,8 @@
   "license": "MIT",
   "homepage": "https://bitbucket.org/alerdenisov/acetoken#readme",
   "dependencies": {
+    "truffle-hdwallet-provider": "0.0.3",
+    "truffle-hdwallet-provider-privkey": "^0.1.0",
     "zeppelin-solidity": "^1.6.0"
   }
 }
